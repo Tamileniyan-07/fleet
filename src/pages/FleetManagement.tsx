@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type FormEvent, type ReactNode } from 'react';
 import { api } from '../services/api';
 import { Vehicle } from '../types';
 import {
@@ -8,7 +8,7 @@ import {
 
 // ============ UI Components (Shadcn-inspired) ============
 
-function Badge({ children, variant = 'default' }: { children: React.ReactNode; variant?: string }) {
+function Badge({ children, variant = 'default' }: { children: ReactNode; variant?: string }) {
   const colors: Record<string, string> = {
     default: 'bg-surface-lighter text-slate-300',
     success: 'bg-success/20 text-success border border-success/30',
@@ -24,7 +24,7 @@ function Badge({ children, variant = 'default' }: { children: React.ReactNode; v
   );
 }
 
-function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+function Dialog({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -107,7 +107,7 @@ export function FleetManagement() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleAdd = async (e: FormEvent) => {
     e.preventDefault();
     await api.createFleet({
       ...formData,
@@ -121,7 +121,7 @@ export function FleetManagement() {
     fetchVehicles();
   };
 
-  const handleEdit = async (e: React.FormEvent) => {
+  const handleEdit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedVehicle) return;
     await api.updateFleet(selectedVehicle.id, formData);

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Key, Globe, Bell, Database, Lock, Save, Check } from 'lucide-react';
+import { Shield, Key, Globe, Database, Save, Check } from 'lucide-react';
 
 export function Settings() {
   const { user } = useAuth();

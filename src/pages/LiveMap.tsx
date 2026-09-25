@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { Vehicle } from '../types';
-import { MapPin, Truck, Radio, Satellite } from 'lucide-react';
+import { MapPin, Radio, Satellite } from 'lucide-react';
 
 export function LiveMap() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
