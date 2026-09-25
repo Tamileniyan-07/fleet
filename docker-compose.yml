@@ -1,0 +1,91 @@
+# ============================================
+# NeuroFleet AI Logistics Platform
+# Docker Compose Infrastructure
+# ============================================
+# Runs PostgreSQL, Spring Boot API, and React Frontend simultaneously.
+#
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose logs -f api    # Follow API logs
+#   docker-compose down -v        # Stop and remove volumes
+# ============================================
+
+version: '3.8'
+
+services:
+  # ---- PostgreSQL Database ----
+  postgres:
+    image: postgres:16-alpine
+    container_name: neurofleet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: neurofleet
+      POSTGRES_USER: neurofleet
+      POSTGRES_PASSWORD: neurofleet_secret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - neurofleet-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neurofleet -d neurofleet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Spring Boot API ----
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: neurofleet-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: neurofleet
+      DB_USER: neurofleet
+      DB_PASSWORD: neurofleet_secret
+      JWT_SECRET: YourSuperSecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLong!!
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    networks:
+      - neurofleet-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ---- React Frontend (Vite) ----
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: neurofleet-frontend
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      VITE_API_URL: http://api:8080
+    ports:
+      - "3000:80"
+    networks:
+      - neurofleet-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  neurofleet-network:
+    driver: bridge
